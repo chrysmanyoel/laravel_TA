@@ -16,7 +16,7 @@ class bookingservice extends Model
 		'tanggal',
 		'username',
 		'namauser',
-		'usernamesalon',
+		'idsalon',
 		'idservice',
 		'tanggalbooking',
 		'jambooking',
@@ -30,11 +30,12 @@ class bookingservice extends Model
 		'tglres',
 		'statusreschedule',
 		'kode_pesanan',
-		'keterangan'
+		'keterangan',
+		'service_charge'
 	];
 	public $timestamps = false;
-	public function getlistbookingwithlayanan($idsalon){
 	
+	public function getlistbookingwithlayanan($idsalon){
 		$tgl = date("Y-m-d");
         return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota','bookingservice.kode_pesanan','layanansalon.toleransi_keterlambatan')
 				->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
@@ -61,6 +62,211 @@ class bookingservice extends Model
 				->orderBy('bookingservice.tanggalbooking', 'asc')
 				->orderBy('bookingservice.jambooking', 'asc')
 				->get();
+    }
+	
+	public function getlistbookingwithlayanansemua($idsalon){
+        return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota','bookingservice.kode_pesanan','layanansalon.toleransi_keterlambatan')
+				->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
+				->join('salon', 'salon.username', '=', 'layanansalon.username')
+				->join('pegawai', 'pegawai.id', '=', 'bookingservice.idpegawai')
+				->join('users', 'users.username', '=', 'salon.username')
+				->where('bookingservice.status','=', 'terima')
+				->where('bookingservice.idsalon','=',$idsalon)
+				->Orwhere('bookingservice.status','=', 'pending')
+				->where('bookingservice.idsalon','=',$idsalon)
+				->Orwhere('bookingservice.status','=', 'rescheduleuser')
+				->Orwhere('bookingservice.statusreschedule','=', 'pending')
+				->where('bookingservice.idsalon','=',$idsalon)
+				->Orwhere('bookingservice.status','=', 'reschedulesalon')
+				->Orwhere('bookingservice.statusreschedule','=', 'pending')
+				->where('bookingservice.idsalon','=',$idsalon)
+				->Orwhere('bookingservice.status','=', 'datang')
+				->where('bookingservice.idsalon','=',$idsalon)
+				->orderBy('bookingservice.tanggalbooking', 'asc')
+				->orderBy('bookingservice.jambooking', 'asc')
+				->get();
+    }
+	
+	public function laporan_salon_penjualan($idsalon,$bulan,$status){
+		//statusnya cuma selesai,cancel,tolak
+		//ini kalo kosong semua
+		if(empty($bulan) && empty($status)){
+			return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota')
+			->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
+			->join('salon', 'salon.username', '=', 'layanansalon.username')
+			->join('pegawai', 'pegawai.id', '=', 'bookingservice.idpegawai')
+			->join('users', 'users.username', '=', 'salon.username')
+			->where('bookingservice.idsalon','=',$idsalon)
+			->orderBy('bookingservice.tanggalbooking', 'desc')
+			->orderBy('bookingservice.jambooking', 'asc')
+			->get();
+		}
+		//ini kalo bulan nya ada tapi statusnya kosong
+		else if(!empty($bulan) && empty($status)){
+			return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota')
+			->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
+			->join('salon', 'salon.username', '=', 'layanansalon.username')
+			->join('pegawai', 'pegawai.id', '=', 'bookingservice.idpegawai')
+			->join('users', 'users.username', '=', 'salon.username')
+			->where('bookingservice.idsalon','=',$idsalon)
+			//->where('bookingservice.bulan','=',$bulan)
+			->orderBy('bookingservice.tanggalbooking', 'desc')
+			->orderBy('bookingservice.jambooking', 'asc')
+			->get();
+		}
+		//ini kalo status nya ada isi tapi bulann kosong
+		else if(empty($bulan) && !empty($status)){
+			return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota')
+			->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
+			->join('salon', 'salon.username', '=', 'layanansalon.username')
+			->join('pegawai', 'pegawai.id', '=', 'bookingservice.idpegawai')
+			->join('users', 'users.username', '=', 'salon.username')
+			->where('bookingservice.idsalon','=',$idsalon)
+			->where('bookingservice.status','=',$status)
+			->orderBy('bookingservice.tanggalbooking', 'desc')
+			->orderBy('bookingservice.jambooking', 'asc')
+			->get();
+		}
+		//ini kalo sama2 ada isinya
+		else{
+			return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota')
+			->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
+			->join('salon', 'salon.username', '=', 'layanansalon.username')
+			->join('pegawai', 'pegawai.id', '=', 'bookingservice.idpegawai')
+			->join('users', 'users.username', '=', 'salon.username')
+			->where('bookingservice.idsalon','=',$idsalon)
+			//->where('bookingservice.bulan','=',$bulan)
+			->where('bookingservice.status','=',$status)
+			->orderBy('bookingservice.tanggalbooking', 'desc')
+			->orderBy('bookingservice.jambooking', 'asc')
+			->get();
+		}        
+    }
+	
+	public function laporan_salon_keuntungan_penjualan($idsalon,$bulan,$status){
+		//kalo laporan keuntungan harusnya nda pakai status jadi cuma bulan
+		//ini kalo kosong semua
+		if(empty($bulan)){
+			return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota')
+			->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
+			->join('salon', 'salon.username', '=', 'layanansalon.username')
+			->join('pegawai', 'pegawai.id', '=', 'bookingservice.idpegawai')
+			->join('users', 'users.username', '=', 'salon.username')
+			->where('bookingservice.idsalon','=',$idsalon)
+			->where('bookingservice.status','=','selesai')
+			->Orwhere('bookingservice.status','=','selesairating')
+			->where('bookingservice.idsalon','=',$idsalon)
+			->orderBy('bookingservice.tanggalbooking', 'desc')
+			->orderBy('bookingservice.jambooking', 'asc')
+			->get();
+		}
+		//ini kalo bulan nya ada tapi statusnya kosong
+		else {
+			return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota')
+			->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
+			->join('salon', 'salon.username', '=', 'layanansalon.username')
+			->join('pegawai', 'pegawai.id', '=', 'bookingservice.idpegawai')
+			->join('users', 'users.username', '=', 'salon.username')
+			->where('bookingservice.idsalon','=',$idsalon)
+			->where('bookingservice.status','=','selesai')
+			//->where('bookingservice.bulan','=',$bulan)
+			->orderBy('bookingservice.tanggalbooking', 'desc')
+			->orderBy('bookingservice.jambooking', 'asc')
+			->get();
+		}
+    }
+	
+	public function getlistbooking_laporan_customer($username,$tanggal_awal,$tanggal_akhir,$status){
+		//ini kalo kosong semua
+		if(empty($tanggal_awal) && empty($tanggal_akhir) && empty($status)){
+			return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota')
+			->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
+			->join('salon', 'salon.username', '=', 'layanansalon.username')
+			->join('pegawai', 'pegawai.id', '=', 'bookingservice.idpegawai')
+			->join('users', 'users.username', '=', 'salon.username')
+			->where('bookingservice.username','=',$username)
+			->where('bookingservice.status','=', 'selesai')
+			->Orwhere('bookingservice.status','=', 'selesairating')
+			->where('bookingservice.username','=',$username)
+			->Orwhere('bookingservice.status','=', 'cancel')
+			->where('bookingservice.username','=',$username)
+			->Orwhere('bookingservice.status','=', 'tolak')
+			->where('bookingservice.username','=',$username)
+			->orderBy('bookingservice.tanggalbooking', 'desc')
+			->orderBy('bookingservice.jambooking', 'asc')
+			->get();
+		}
+		//ini kalo bulan nya ada tapi statusnya kosong
+		else if(!empty($tanggal_awal) && !empty($tanggal_akhir) && empty($status)){
+			return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota')
+			->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
+			->join('salon', 'salon.username', '=', 'layanansalon.username')
+			->join('pegawai', 'pegawai.id', '=', 'bookingservice.idpegawai')
+			->join('users', 'users.username', '=', 'salon.username')
+			->where('bookingservice.username','=',$username)
+			->where('bookingservice.status','=', 'selesai')
+			->where('bookingservice.tanggalbooking','>=',$tanggal_awal)
+			->where('bookingservice.tanggalbooking','<=',$tanggal_akhir)
+			->Orwhere('bookingservice.status','=', 'selesairating')
+			->where('bookingservice.username','=',$username)
+			->where('bookingservice.tanggalbooking','>=',$tanggal_awal)
+			->where('bookingservice.tanggalbooking','<=',$tanggal_akhir)
+			->Orwhere('bookingservice.status','=', 'cancel')
+			->where('bookingservice.username','=',$username)
+			->where('bookingservice.tanggalbooking','>=',$tanggal_awal)
+			->where('bookingservice.tanggalbooking','<=',$tanggal_akhir)
+			->Orwhere('bookingservice.status','=', 'tolak')
+			->where('bookingservice.username','=',$username)
+			->where('bookingservice.tanggalbooking','>=',$tanggal_awal)
+			->where('bookingservice.tanggalbooking','<=',$tanggal_akhir)
+			->orderBy('bookingservice.tanggalbooking', 'desc')
+			->orderBy('bookingservice.jambooking', 'asc')
+			->get();
+		}
+		//ini kalo status nya ada isi tapi bulann kosong
+		else if(empty($tanggal_awal) && empty($tanggal_akhir) && !empty($status)){
+			if($status == 'selesai'){
+				return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota')
+				->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
+				->join('salon', 'salon.username', '=', 'layanansalon.username')
+				->join('pegawai', 'pegawai.id', '=', 'bookingservice.idpegawai')
+				->join('users', 'users.username', '=', 'salon.username')
+				->where('bookingservice.username','=',$username)
+				->where('bookingservice.status','=', 'selesai')
+				->Orwhere('bookingservice.status','=', 'selesairating')
+				->where('bookingservice.username','=',$username)
+				->orderBy('bookingservice.tanggalbooking', 'desc')
+				->orderBy('bookingservice.jambooking', 'asc')
+				->get();
+			}else{
+				return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota')
+				->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
+				->join('salon', 'salon.username', '=', 'layanansalon.username')
+				->join('pegawai', 'pegawai.id', '=', 'bookingservice.idpegawai')
+				->join('users', 'users.username', '=', 'salon.username')
+				->where('bookingservice.username','=',$username)
+				->where('bookingservice.status','=', $status)
+				->orderBy('bookingservice.tanggalbooking', 'desc')
+				->orderBy('bookingservice.jambooking', 'asc')
+				->get();
+			}
+			
+		}
+		//ini kalo sama2 ada isinya
+		else{
+			return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota')
+			->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
+			->join('salon', 'salon.username', '=', 'layanansalon.username')
+			->join('pegawai', 'pegawai.id', '=', 'bookingservice.idpegawai')
+			->join('users', 'users.username', '=', 'salon.username')
+			->where('bookingservice.username','=',$username)
+			->where('bookingservice.tanggalbooking','>=',$tanggal_awal)
+			->where('bookingservice.tanggalbooking','<=',$tanggal_akhir)
+			->where('bookingservice.status','=', $status)
+			->orderBy('bookingservice.tanggalbooking', 'desc')
+			->orderBy('bookingservice.jambooking', 'asc')
+			->get();
+		}        
     }
 	
 	public function getusername_cancel_tgl($idsalon){
@@ -90,31 +296,33 @@ class bookingservice extends Model
 				->orderBy('bookingservice.jambooking', 'asc')
 				->get();
     }
+	
+	//ini harus nya nda kepake karna ngapain juga ngitung count cancel tapi tanggal nya tanggal hari ini [$tgl]
 	public function getcount_cancel_tgl($idsalon){
 		$tgl = date("Y-m-d");
         return bookingservice::select('username')
-				->where('bookingservice.status','=', 'terima')
-				->where('bookingservice.tanggalbooking','=',$tgl)
-				->where('bookingservice.idsalon','=',$idsalon)
-				->Orwhere('bookingservice.status','=', 'pending')
-				->where('bookingservice.tanggalbooking','=',$tgl)
-				->where('bookingservice.idsalon','=',$idsalon)
-				->Orwhere('bookingservice.statusreschedule','=', 'rescheduleuser')
-				->where('bookingservice.status','=', 'pending')
-				->where('bookingservice.tglres','=',$tgl)
-				->where('bookingservice.idsalon','=',$idsalon)
-				->Orwhere('bookingservice.statusreschedule','=', 'reschedulesalon')
-				->where('bookingservice.status','=', 'pending')
-				->where('bookingservice.tglres','=',$tgl)
-				->where('bookingservice.idsalon','=',$idsalon)
-				->Orwhere('bookingservice.status','=', 'datang')
-				->where('bookingservice.tanggalbooking','=',$tgl)
-				->where('bookingservice.idsalon','=',$idsalon)
-				->Orwhere('bookingservice.status','=', 'cancel')
-				->where('bookingservice.idsalon','=',$idsalon)
-				->orderBy('bookingservice.tanggalbooking', 'asc')
-				->orderBy('bookingservice.jambooking', 'asc')
-				->get();
+			->where('bookingservice.status','=','terima')
+			->where('bookingservice.tanggalbooking','=',$tgl)
+			->where('bookingservice.idsalon','=',$idsalon)
+			->Orwhere('bookingservice.status','=', 'pending')
+			->where('bookingservice.tanggalbooking','=',$tgl)
+			->where('bookingservice.idsalon','=',$idsalon)
+			->Orwhere('bookingservice.statusreschedule','=', 'rescheduleuser')
+			->where('bookingservice.status','=', 'pending')
+			->where('bookingservice.tglres','=',$tgl)
+			->where('bookingservice.idsalon','=',$idsalon)
+			->Orwhere('bookingservice.statusreschedule','=', 'reschedulesalon')
+			->where('bookingservice.status','=', 'pending')
+			->where('bookingservice.tglres','=',$tgl)
+			->where('bookingservice.idsalon','=',$idsalon)
+			->Orwhere('bookingservice.status','=', 'datang')
+			->where('bookingservice.tanggalbooking','=',$tgl)
+			->where('bookingservice.idsalon','=',$idsalon)
+			->Orwhere('bookingservice.status','=', 'cancel')
+			->where('bookingservice.idsalon','=',$idsalon)
+			->orderBy('bookingservice.tanggalbooking', 'asc')
+			->orderBy('bookingservice.jambooking', 'asc')
+			->get();
     }
 	
 	public function getusername_cancel($idsalon){
@@ -147,30 +355,14 @@ class bookingservice extends Model
 				->where('bookingservice.usernamecancel','=',$username)
 				->Orwhere('bookingservice.status','=', 'cancel')
 				->where('bookingservice.usernamecancel','=',$username)
+				->Orwhere('bookingservice.status','=', 'tidak datang')
+				->where('bookingservice.usernamecancel','=',$username)
 				->orderBy('bookingservice.tanggalbooking', 'asc')
 				->orderBy('bookingservice.jambooking', 'asc')
 				->get();
     }
 		
-	public function getlistbookingwithlayanansemua($idsalon){
-        return bookingservice::select('bookingservice.*','layanansalon.namalayanan', 'layanansalon.peruntukan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto')
-				->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
-				->join('salon', 'salon.username', '=', 'layanansalon.username')
-				->join('users', 'users.username', '=', 'salon.username')
-				->where('bookingservice.status','=', 'terima')
-				->where('bookingservice.idsalon','=',$idsalon)
-				->Orwhere('bookingservice.status','=', 'pending')
-				->where('bookingservice.idsalon','=',$idsalon)
-				->Orwhere('bookingservice.status','=', 'rescheduleuser')
-				->where('bookingservice.idsalon','=',$idsalon)
-				->Orwhere('bookingservice.status','=', 'reschedulesalon')
-				->where('bookingservice.idsalon','=',$idsalon)
-				->Orwhere('bookingservice.status','=', 'datang')
-				->where('bookingservice.idsalon','=',$idsalon)
-				->orderBy('bookingservice.tanggalbooking', 'asc')
-				->orderBy('bookingservice.jambooking', 'asc')
-				->get();
-    }
+	
 	
 	public function getlistbookingwithlayananuser($username){ //ini ttampilin data booking untuk user di sedang berjalan where status != selesai / tolak
        return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota','bookingservice.kode_pesanan')
@@ -181,7 +373,9 @@ class bookingservice extends Model
 				->where('bookingservice.status','!=', 'cancel')
 				->where('bookingservice.status','!=', 'tidak hadir')
 				->where('bookingservice.status','!=', 'tolak')
+				->where('bookingservice.status','!=', 'blocked')
 				->where('bookingservice.status','!=', 'selesai')
+				->where('bookingservice.status','!=', 'selesairating')
 				->where('bookingservice.username','=',$username)
 				->orderBy('bookingservice.tanggalbooking', 'asc')
 				->orderBy('bookingservice.jambooking', 'asc')
@@ -189,12 +383,15 @@ class bookingservice extends Model
     }
 	
 	public function getlistbookingwithlayananuserselesai($username){
-        return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto')
+        return bookingservice::select('bookingservice.*', 'layanansalon.peruntukan','layanansalon.namalayanan', 'layanansalon.jenjangusia', 'layanansalon.durasi','users.foto','salon.namasalon','pegawai.nama as namapegawai','salon.kota')
 				->join('layanansalon', 'layanansalon.id', '=', 'bookingservice.idservice')
 				->join('salon', 'salon.username', '=', 'layanansalon.username')
+				->join('pegawai', 'pegawai.id', '=', 'bookingservice.idpegawai')
 				->join('users', 'users.username', '=', 'salon.username')
 				->where('bookingservice.username','=',$username)
 				->where('bookingservice.status','=', 'selesai')
+				->Orwhere('bookingservice.status','=', 'selesairating')
+				->where('bookingservice.username','=',$username)
 				->orderBy('bookingservice.tanggalbooking', 'asc')
 				->orderBy('bookingservice.jambooking', 'asc')
 				->get();
@@ -206,6 +403,16 @@ class bookingservice extends Model
 		$cari->keterangan = $keterangan;
 		$cari->usernamecancel = $usernamecancel;
 		$cari->save();
+	}
+	
+	public function check_isblocked($username,$idsalon){
+		$hari = date("Y-m-d");
+		return bookingservice::select('bookingservice.*')
+				->where('username', '=', $username)
+				->where('tanggal', '=', $hari)
+				->where('idsalon', '=', $idsalon)
+				->where('status', '=', 'blocked')
+				->get();
 	}
 	
 	public function konfirm_kodepesanan($id,$kodepesanan){
@@ -223,16 +430,15 @@ class bookingservice extends Model
 	}
 	
 	//ini cek diganti
-	public function cancelsemuabooking($usernamesalon,$requestpegawai,$tanggal){
+	public function cancelsemuabooking($idsalon,$idpegawai,$tanggal){
 		return bookingservice::select("bookingservice.*")
-			->where("usernamesalon","=",$usernamesalon)
+			->where("idsalon","=",$idsalon)
 			->where("tanggalbooking","=",$tanggal)
-			->where("requestpegawai","=",$requestpegawai)
-			->where("status","=",'terima')
-			->Orwhere("status","=",'pending')
-			->where("requestpegawai","=",$requestpegawai)
-			->where("usernamesalon","=",$usernamesalon)
-			->where("tanggalbooking","=",$tanggal)
+			->where("idpegawai","=",$idpegawai)
+			->where(function ($query) {
+				$query->where("status","=",'terima')
+				  ->orWhere('status', '=', 'pending');
+			})
 			->get();		
 	}
 		
@@ -306,34 +512,49 @@ class bookingservice extends Model
 	
 	public function cekpesanan($idsalon,$tanggal,$jam1,$jam2){
 		return bookingservice::select('bookingservice.*')
+			//selesai
 			->where('idsalon','=',$idsalon)
 			->where('tanggalbooking','=',$tanggal)
 			->where('status','!=','selesai')
 			->whereBetween('jambooking',[$jam1,$jam2])
+			->where(function ($query) {
+				$query->where('status','=','pending')
+				  ->orWhere('status','=','terima');
+			})
 			->orwhereBetween('jambookingselesai',[$jam1,$jam2])
-			->where('status','!=','selesai')
+			->where(function ($query) {
+				$query->where('status','=','pending')
+				  ->orWhere('status','=','terima');
+			})
 			->where('idsalon','=',$idsalon)
 			->where('tanggalbooking','=',$tanggal)
-			
-			/*->Orwhere('idsalon','=',$idsalon)
-			->where('tanggalbooking','=',$tanggal)
-			->where('status','!=','tolak')
-			->whereBetween('jambooking',[$jam1,$jam2])
-			->orwhereBetween('jambookingselesai',[$jam1,$jam2])
-			->where('status','!=','tolak')
-			->where('idsalon','=',$idsalon)
-			->where('tanggalbooking','=',$tanggal)*/
-			
-			
-			/*->Orwhere('idsalon','=',$idsalon)
-			->where('tanggalbooking','=',$tanggal)
-			->where('status','!=','cancel')
-			->whereBetween('jambooking',[$jam1,$jam2])
-			->orwhereBetween('jambookingselesai',[$jam1,$jam2])
-			->where('status','!=','cancel')
-			->where('idsalon','=',$idsalon)
-			->where('tanggalbooking','=',$tanggal)*/
 			->get();
+	}
+	
+	public function cancel_tolak_booking($idsalon,$tanggal,$jam1,$jam2){
+		$cari = bookingservice::select('bookingservice.*')
+			->where('idsalon','=',$idsalon)
+			->where('tanggalbooking','=',$tanggal)
+			->where('status','!=','selesai')
+			->whereBetween('jambooking',[$jam1,$jam2])
+			->orwhereBetween('jambookingselesai',[$jam1,$jam2])
+			->where('status','!=','selesai')
+			->where('idsalon','=',$idsalon)
+			->where('tanggalbooking','=',$tanggal)
+			->get();
+			
+		for($i=0; $i<count($cari); $i++){
+			if($cari[$i]->status == 'terima'){
+				$cari[$i]->status = 'cancel';
+				$cari[$i]->usernamecancel = '-';
+				$cari[$i]->save();
+			}else if($cari[$i]->status == 'pending'){
+				$cari[$i]->status = 'cancel';
+				$cari[$i]->save();
+			}
+		}
+		
+		return $cari;
 	}
 	
 	

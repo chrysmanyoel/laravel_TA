@@ -23,6 +23,25 @@ class kategori extends Model
 		return $dt;
 	}
 	
+	public function getidkat(){
+		return kategori::select('idkategori')
+			->distinct()
+			->get();
+	}
+	
+	public function getnamakat($idkategori){
+		return kategori::select('kategori.*')
+			->where('idkategori','=',$idkategori)
+			->get();
+	}
+	
+	public function delkategori($idkategori,$namakategori){
+		return kategori::select('kategori.*')
+			->where('idkategori','=',$idkategori)
+			->where('namakategori','=',$namakategori)
+			->delete();
+	}
+	
 	public function getallidkategori(){
 		$dt = kategori::select('idkategori')
 			->distinct()

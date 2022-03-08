@@ -12,6 +12,7 @@ class salon extends Model
 	protected $primaryKey = 'id';
 	protected $fillable = [
 		'id',
+		'idsalon',
 		'username',
 		'namasalon',
 		'alamat',
@@ -23,7 +24,9 @@ class salon extends Model
 		'latitude',
 		'keterangan',
 		'status',
-		'kategori'
+		'kategori',
+		'rating',
+		'ulasan'
 	];
 	public $timestamps = false;
 	
@@ -35,16 +38,16 @@ class salon extends Model
 		$usersbaru->alamat	 	= "-";
 		$usersbaru->kota	 	= "-";
 		$usersbaru->telp	 	= 0;
-		$usersbaru->pembayaran  = "saldo";
-		$usersbaru->diskon  = 0;
 		$usersbaru->longitude   = 0;
 		$usersbaru->latitude	= 0;
 		$usersbaru->keterangan  = "-";
 		$usersbaru->status   	= "aktif";
 		$usersbaru->kategori   	= "-";
+		$usersbaru->rating   	= 0;
+		$usersbaru->ulasan   	= 0;
 		$usersbaru->save();
 	}
-	
+		
 	public function getallsalon(){
 		$dt = salon::select('salon.*')
 					->get();
@@ -58,14 +61,12 @@ class salon extends Model
 		return $dt;
 	}
 	
-	public function updatesalon($username, $namasalon, $alamat, $kota, $telp, $pembayaran, $diskon, $latitude, $longitude, $keterangan, $status, $kategori){
+	public function updatesalon($username, $namasalon, $alamat, $kota, $telp, $latitude, $longitude, $keterangan, $status, $kategori){
 		$cari = salon::where('username','=',$username)->first();
 		$cari->namasalon 	= $namasalon;
 		$cari->alamat	 	= $alamat;
 		$cari->kota	 		= $kota;
 		$cari->telp	 		= $telp;
-		$cari->pembayaran	= $pembayaran;
-		$cari->diskon 		= $diskon;
 		$cari->latitude 	= $latitude;
 		$cari->longitude 	= $longitude;
 		$cari->keterangan	= $keterangan;
@@ -87,7 +88,7 @@ class salon extends Model
 		return $cari;
 	}
 	
-	public function carisalon($username){
+	public function carisalon($username,$kategori){
 		$hari = date("Y-m-d");
 		$timestamp = strtotime($hari);
 		$day = date('l', $timestamp);
@@ -107,14 +108,105 @@ class salon extends Model
 			$sekarang = "minggu";
 		}
 		
-        return salon::select('salon.*', 'users.foto','jadwalsalon.jambuka','jadwalsalon.hari','jadwalsalon.jamtutup')
+		$temp = explode(" ",$kategori);
+		//ngecek kalo username ada tapi kat kosong
+		if($kategori == '' && $username != ''){
+			 $dt = salon::select('salon.*', 'users.foto','jadwalsalon.jambuka','jadwalsalon.hari','jadwalsalon.jamtutup')
 				->join('users', 'users.username', '=', 'salon.username')
 				->join('jadwalsalon', 'jadwalsalon.idsalon', '=', 'salon.id')
-				->where('salon.username', 'like', '%' . $username . '%')
+				->where('salon.namasalon', 'like', '%' . $username . '%')
 				->where('jadwalsalon.hari','=',$sekarang)
 				->distinct()
 				->orderBy('salon.username', 'asc')
 				->get();
+		}
+		//ngecek kalo username ada tapi kat ada1
+		else if(count($temp) == 1 && $username != ''){
+			$dt = salon::select('salon.*', 'users.foto','jadwalsalon.jambuka','jadwalsalon.hari','jadwalsalon.jamtutup')
+				->join('users', 'users.username', '=', 'salon.username')
+				->join('jadwalsalon', 'jadwalsalon.idsalon', '=', 'salon.id')
+				->where('salon.namasalon', 'like', '%' . $username . '%')
+				->where('salon.kategori','=',$kategori)
+				->where('jadwalsalon.hari','=',$sekarang)
+				->distinct()
+				->orderBy('salon.username', 'asc')
+				->get();
+		}
+		//ngecek kalo username ada tapi kat ada2
+		else if(count($temp) == 2 && $username != ''){
+			$dt = salon::select('salon.*', 'users.foto','jadwalsalon.jambuka','jadwalsalon.hari','jadwalsalon.jamtutup')
+					->join('users', 'users.username', '=', 'salon.username')
+					->join('jadwalsalon', 'jadwalsalon.idsalon', '=', 'salon.id')
+					->where('salon.namasalon', 'like', '%' . $username . '%')
+					->where('jadwalsalon.hari','=',$sekarang)
+					->where('salon.kategori','=',$temp[0])
+					->Orwhere('salon.kategori','=',$temp[1])
+					->where('salon.namasalon', 'like', '%' . $username . '%')
+					->where('jadwalsalon.hari','=',$sekarang)
+					->distinct()
+					->orderBy('salon.username', 'asc')
+					->get();
+		}
+		//ngecek kalo username ada tapi kat ada3
+		else if(count($temp) == 3 && $username != ''){
+			$dt = salon::select('salon.*', 'users.foto','jadwalsalon.jambuka','jadwalsalon.hari','jadwalsalon.jamtutup')
+				->join('users', 'users.username', '=', 'salon.username')
+				->join('jadwalsalon', 'jadwalsalon.idsalon', '=', 'salon.id')
+				->where('salon.namasalon', 'like', '%' . $username . '%')
+				->where('jadwalsalon.hari','=',$sekarang)
+				->where('salon.kategori','=',$temp[0])
+				->Orwhere('salon.kategori','=',$temp[1])
+				->where('salon.namasalon', 'like', '%' . $username . '%')
+				->where('jadwalsalon.hari','=',$sekarang)
+				->Orwhere('salon.kategori','=',$temp[2])
+				->where('salon.namasalon', 'like', '%' . $username . '%')
+				->where('jadwalsalon.hari','=',$sekarang)
+				->distinct()
+				->orderBy('salon.username', 'asc')
+				->get();
+		}else{
+			//$temp = explode(" ",$kategori);
+			//ngecek kalo username kosong tapi kat ada1
+			if(count($temp) == 1){
+				$dt = salon::select('salon.*', 'users.foto','jadwalsalon.jambuka','jadwalsalon.hari','jadwalsalon.jamtutup')
+					->join('users', 'users.username', '=', 'salon.username')
+					->join('jadwalsalon', 'jadwalsalon.idsalon', '=', 'salon.id')
+					->where('salon.kategori','=',$kategori)
+					->where('jadwalsalon.hari','=',$sekarang)
+					->distinct()
+					->orderBy('salon.username', 'asc')
+					->get();
+			}
+			//ngecek kalo username kosong tapi kat ada2
+			else if(count($temp) == 2){
+				$dt = salon::select('salon.*', 'users.foto','jadwalsalon.jambuka','jadwalsalon.hari','jadwalsalon.jamtutup')
+					->join('users', 'users.username', '=', 'salon.username')
+					->join('jadwalsalon', 'jadwalsalon.idsalon', '=', 'salon.id')
+					->where('jadwalsalon.hari','=',$sekarang)
+					->where('salon.kategori','=',$temp[0])
+					->Orwhere('salon.kategori','=',$temp[1])
+					->where('jadwalsalon.hari','=',$sekarang)
+					->distinct()
+					->orderBy('salon.username', 'asc')
+					->get();
+			}
+			//ngecek kalo username kosong tapi kat ada3
+			else{
+				$dt = salon::select('salon.*', 'users.foto','jadwalsalon.jambuka','jadwalsalon.hari','jadwalsalon.jamtutup')
+				->join('users', 'users.username', '=', 'salon.username')
+				->join('jadwalsalon', 'jadwalsalon.idsalon', '=', 'salon.id')
+				->where('jadwalsalon.hari','=',$sekarang)
+				->where('salon.kategori','=',$temp[0])
+				->Orwhere('salon.kategori','=',$temp[1])
+				->where('jadwalsalon.hari','=',$sekarang)
+				->Orwhere('salon.kategori','=',$temp[2])
+				->where('jadwalsalon.hari','=',$sekarang)
+				->distinct()
+				->orderBy('salon.username', 'asc')
+				->get();
+			}
+		}
+		return $dt;
     }
 }
 

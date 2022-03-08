@@ -42,6 +42,7 @@ class pegawai extends Model
 				->join('detailpegawai', 'detailpegawai.idpegawai', '=', 'pegawai.id')
 				->whereNotIn('pegawai.id', DB::table('absensi_pegawai')->select('absensi_pegawai.idpegawai')->where('absensi_pegawai.tanggal', '=', $tgl))
 				->where('pegawai.idsalon','=',$idsalon)
+				->where('pegawai.status','=','aktif')
 				->where('detailpegawai.idkategori','=',$kodelayanan)
 				->get();
 		return $dt;;

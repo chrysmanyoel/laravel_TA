@@ -136,7 +136,7 @@
             <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
                 <tr>
                     <td bgcolor="#ffffff" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
-                        <p style="margin: 0; text-align: justify;'">Untuk Menghindari penipuan! Jangan berikan kode OTP kepada siapapun, kode ini hanya digunakan untuk 1x pakai. Kode OTP Salon-Online : </p> 
+                        <p style="margin: 0; text-align: justify;'">Untuk Menghindari penipuan! Jangan berikan kode OTP kepada siapapun, segera gunakan kode tersebut di dalam aplikasi. OTP akan otomatis kadaluarsa dalam 5 menit jika tidak digunakan. Kode OTP Salon-Online : </p> 
                     </td>
                 </tr>
                 <tr>
